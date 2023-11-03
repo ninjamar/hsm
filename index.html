@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Framework Test</title>
+        <script type="module" src="hsm.js"></script>
+        <script type="module">
+            import {Component, use} from "./hsm.js";
+            class MyComponent extends Component {
+                dostuff(){
+                    this.selector("#here").innerHTML = "test";
+                }
+                x = 0
+                increase(){
+                    this.x = this.x + 1;
+                    this.selector("#increase").innerHTML = this.x;
+                }
+                render(){
+                    return this.html`
+                        <div>
+                            <button onclick="${() => this.dostuff()}">Call dostuff()</button>  
+                            <p id="here"></p>
+                            <button onclick="${() => this.increase()}">Increase</button>
+                            <p id="increase">0</p>
+                        </div> 
+                    `
+                }
+            }
+            document.addEventListener("DOMContentLoaded", () => {
+                use("#d1", MyComponent);
+            });
+        </script>
+    </head>
+    <body>
+        <div id="d1"></div>
+        <div id="d2"></div>
+    </body>
+</html>
