@@ -24,8 +24,7 @@ export class Component {
         // Search within component instance
         // Refer to mangled ID's
         // We have to query the parent node because elem.querySelector doesn't include the current element (searches through child nodes)
-        // TODO - Shouldn't be nessisary anymore
-        var e = this.element.parentNode || document; // IDK why
+        var e = this.root.parentNode;
         if (s[0] == "#")
             return e.querySelector("#" + this.methodid + "_" + s.slice(1))
         return e.querySelector(s);
@@ -53,12 +52,10 @@ export class Component {
     }
     delete(){
         // Remove all references
-        console.log(window.hsmcomponents)
         //window.hsmcomponents = window.hsmcomponents.filter((x) => x.id != this.id);
         window.hsmcomponents = window.hsmcomponents.map((x) => x.id != this.id ? x : {id: -1});
-        console.log(window.hsmcomponents);
         // Delete element
-        this.element.remove();
+        this.root.remove();
     }
     after(args){}
 }
@@ -69,7 +66,7 @@ export function use(Cls, q, options = {}){
     window.hsmcomponents.push(cls);
     let target = document.querySelector(q);
     // Somehow this fixes everything
-    cls.element = target.appendChild(cls.render());
+    cls.root = target.appendChild(cls.render());
     // Execute after hook
     cls.after(options.after);
     return cls;
