@@ -24,9 +24,6 @@ export class Component {
     }
     css(code, ...f){
         // This is for ease of syntax
-        if (arguments.length == 1){
-            
-        }
         return interleave(code, f).join("");
     }
     html(code, ...f){
