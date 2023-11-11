@@ -17,17 +17,17 @@ export class Component {
     fns = [];
     constructor(id, options={}){
         this.id = id;
-        this.methodid = `hsm_component_${this.id}`;
         this.options = options;
     }
     selector(s){
-        // Search within component instance
-        // Refer to mangled ID's
-        // We have to query the parent node because elem.querySelector doesn't include the current element (searches through child nodes)
-        var e = this.root.parentNode;
-        if (s[0] == "#")
-            return e.querySelector("#" + this.methodid + "_" + s.slice(1))
-        return e.querySelector(s);
+        return this.root.querySelector(s);
+    }
+    css(code, ...f){
+        // This is for ease of syntax
+        if (arguments.length == 1){
+            
+        }
+        return interleave(code, f).join("");
     }
     html(code, ...f){
         // Check if f is a function
@@ -41,33 +41,43 @@ export class Component {
         let element = document.createElement("div");
         // Rejoin html
         element.innerHTML = interleave(code, f).join("");
-        element.firstChild.id = this.methodid;
-        // Unique/Mangled ID's
-        element.querySelectorAll("[id]").forEach((x, i) => {
-            x.id = this.methodid + "_" + x.id;
-        });
-        // INSANE
-        // return element.innerHTML;
-        return element.children[0];
+        return element;
     }
     delete(){
-        // Remove all references
-        //window.hsmcomponents = window.hsmcomponents.filter((x) => x.id != this.id);
+        // Remove all references to component
         window.hsmcomponents = window.hsmcomponents.map((x) => x.id != this.id ? x : {id: -1});
-        // Delete element
+        // Shadow root can never be removed so we remove all of it's children
         this.root.remove();
     }
     after(args){}
+    style(){}
 }
-export function use(Cls, q, options = {}){
+
+export function use(Cls, target, options = {}){
     // Initialize component with id
     let cls = new Cls(window.hsmcomponents.length, options);
     // Add component instance to component registery
     window.hsmcomponents.push(cls);
-    let target = document.querySelector(q);
-    // Somehow this fixes everything
-    cls.root = target.appendChild(cls.render());
-    // Execute after hook
+    
+    // Shadow root wrapper
+    let componentwrapper = document.createElement("div");
+    componentwrapper.attachShadow({mode: "open"});
+
+    // Append rendering to shadow root
+    // root refers to the Element
+    // shadowRoot refers to the "document"
+    cls.root = componentwrapper.shadowRoot.appendChild(cls.render());
+    cls.shadowRoot = componentwrapper.shadowRoot;
+
+    // In CSS, use this to reference wrapper
+    cls.root.id = "root";
+
+    let sheet = new CSSStyleSheet();
+    sheet.replaceSync(cls.style());
+    cls.shadowRoot.adoptedStyleSheets.push(sheet);
+
+    document.querySelector(target).appendChild(componentwrapper);
+
     cls.after(options.after);
     return cls;
 }
