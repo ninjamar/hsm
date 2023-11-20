@@ -10,7 +10,7 @@ const interleave = ([ x, ...xs ], ys = []) =>
         ? ys
         : [ x, ...interleave (ys, xs) ]
 
-export class Component extends HTMLElement {
+export default class Component extends HTMLElement {
     fns = [];
     constructor(){
         super();
@@ -26,10 +26,10 @@ export class Component extends HTMLElement {
             this.append(...this.render());
 
             let sheet = new CSSStyleSheet();
-            sheet.replaceSync(this.renderstyle());
+            sheet.replaceSync(this.getstyle());
             this.parentNode.adoptedStyleSheets.push(sheet);
 
-            this.after();
+            this.onmount();
         } else {
             // Move element into shadow root
             // This if/else statement is for clarity of code
@@ -39,6 +39,7 @@ export class Component extends HTMLElement {
         }
     }
     css(code, ...f){
+        // TODO: Allow css as object
         // This allows clean syntax
         return interleave(code, f).join("");
     }
@@ -63,6 +64,6 @@ export class Component extends HTMLElement {
         this.remove();
     }
     render(){}
-    after(args){}
-    renderstyle(){}
+    onmount(args){}
+    getstyle(){}
 }
