@@ -5,10 +5,12 @@
 
 
 window.hsmcomponents = [];
+/*
 const interleave = ([ x, ...xs ], ys = []) =>
     x === undefined
         ? ys
-        : [ x, ...interleave (ys, xs) ]
+        : [ x, ...interleave (ys, xs) ]*/
+const interleave = (a, b) => a.reduce((arr, v, i) => arr.concat(v, b[i]), []).filter((x) => x  != undefined);
 
 export default class Component extends HTMLElement {
     fns = [];
@@ -38,14 +40,21 @@ export default class Component extends HTMLElement {
             div.shadowRoot.appendChild(this);
         }
     }
-    css(code, ...f){
-        // TODO: Allow css as object
-        // This allows clean syntax
-        return interleave(code, f).join("");
+    css(style, ...f){
+        // Check if CSS is string
+        if (typeof(style[0]) == "string"){
+            return interleave(style, f).join("");
+        }
+        // Otherwise assume the CSS to be an object
+        // For each outer key, return key {inner}
+        return Object.entries(style).map(([k, v]) => `${k}{${
+            // Return inner formatted as css
+            Object.entries(v).map(([k, v]) => `${k}:${v}`).join(";")
+        }}`).join("");
     }
-    html(code, ...f){
+    html(code, ...fn){
         // Check if f is a function
-        f = f.map((x, i) => (typeof(x) == "function") ? 
+        fn = fn.map((x, i) => (typeof(x) == "function") ? 
             [
                 // This allows us to run perform multiple expressions before returning
                 this.fns.push(x),
@@ -60,7 +69,7 @@ export default class Component extends HTMLElement {
     }
     delete(){
         // Remove all references to component
-        window.hsmcomponents = window.hsmcomponents.map((x) => x.id != this.hsmidid ? x : {id: -1});
+        window.hsmcomponents = window.hsmcomponents.map((x) => x.hsmid != this.hsmid ? x : {hsmid: -1});
         this.remove();
     }
     render(){}
