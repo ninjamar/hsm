@@ -4,12 +4,7 @@
 */
 
 
-window.hsmcomponents = [];
-/*
-const interleave = ([ x, ...xs ], ys = []) =>
-    x === undefined
-        ? ys
-        : [ x, ...interleave (ys, xs) ]*/
+window.hsm = {components: []};
 const interleave = (a, b) => a.reduce((arr, v, i) => arr.concat(v, b[i]), []).filter((x) => x  != undefined);
 
 export default class Component extends HTMLElement {
@@ -20,8 +15,8 @@ export default class Component extends HTMLElement {
     connectedCallback(){
         if (this.parentNode instanceof ShadowRoot){
             // Normal instantiation
-            this.hsmid = window.hsmcomponents.length;
-            window.hsmcomponents.push(this);
+            this.hsmid = window.hsm.components.length;
+            window.hsm.components.push(this);
             
             this.id = "root";
 
@@ -58,18 +53,20 @@ export default class Component extends HTMLElement {
             [
                 // This allows us to run perform multiple expressions before returning
                 this.fns.push(x),
-                // TODO: Virtual dom should make window.hsmcomponents smaller and more efficient by deleting unused items
-                `hsmcomponents[${this.hsmid}].fns[${i}].bind(hsmcomponents[${this.hsmid}])(event)`
+                // TODO: Virtual dom should make window.hsm smaller and more efficient by deleting unused items
+                // We could use use below instead
+                // `((c) => c[${this.hsmid}].fns[${i}].bind(c[${this.hsmid}])(event))(window.hsm.components)`
+                // `(function (c,d,i){c[d].fns[i].bind(c[d])(event)})(window.hsm.components,${this.hsmid}, ${i})`,
+                `((c=window.hsm.components)=>c[${this.hsmid}].fns[${i}].bind(c[${this.hsmid}])(event??0))()`,
             ][1] : x
         );
-
         let element = document.createElement("div");
-        element.innerHTML = interleave(code, f).join("");
+        element.innerHTML = interleave(code, fn).join("");
         return element.children;
     }
     delete(){
         // Remove all references to component
-        window.hsmcomponents = window.hsmcomponents.map((x) => x.hsmid != this.hsmid ? x : {hsmid: -1});
+        window.hsm.components = window.hsm.components.map((x) => x.hsmid != this.hsmid ? x : {hsmid: -1});
         this.remove();
     }
     render(){}
