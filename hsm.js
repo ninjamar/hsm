@@ -6,20 +6,23 @@
 
 window.hsm = {components: []};
 const interleave = (a, b) => a.reduce((arr, v, i) => arr.concat(v, b[i]), []).filter((x) => x  != undefined);
-
 export default class Component extends HTMLElement {
-    fns = [];
+    hsm = {
+        fns: [],
+        //properties: {}
+    };
     constructor(){
         super();
     }
     connectedCallback(){
         if (this.parentNode instanceof ShadowRoot){
             // Normal instantiation
-            this.hsmid = window.hsm.components.length;
+            this.hsm.id = window.hsm.components.length;
             window.hsm.components.push(this);
             
             this.id = "root";
 
+            //this.hsm.properties = Object.fromEntries(Array.from(this.attributes).map(x => [x.nodeName, x.nodeValue]));
             this.append(...this.render());
 
             let sheet = new CSSStyleSheet();
@@ -52,12 +55,12 @@ export default class Component extends HTMLElement {
         fn = fn.map((x, i) => (typeof(x) == "function") ? 
             [
                 // This allows us to run perform multiple expressions before returning
-                this.fns.push(x),
+                this.hsm.fns.push(x),
                 // TODO: Virtual dom should make window.hsm smaller and more efficient by deleting unused items
                 // We could use use below instead
                 // `((c) => c[${this.hsmid}].fns[${i}].bind(c[${this.hsmid}])(event))(window.hsm.components)`
                 // `(function (c,d,i){c[d].fns[i].bind(c[d])(event)})(window.hsm.components,${this.hsmid}, ${i})`,
-                `((c=window.hsm.components)=>c[${this.hsmid}].fns[${i}].bind(c[${this.hsmid}])(event??0))()`,
+                `((c=window.hsm.components)=>c[${this.hsm.id}].hsm.fns[${i}].bind(c[${this.hsm.id}])(event??0))()`,
             ][1] : x
         );
         let element = document.createElement("div");
@@ -66,7 +69,7 @@ export default class Component extends HTMLElement {
     }
     delete(){
         // Remove all references to component
-        window.hsm.components = window.hsm.components.map((x) => x.hsmid != this.hsmid ? x : {hsmid: -1});
+        window.hsm.components = window.hsm.components.map((x) => x.hsm.id != this.hsmid ? x : {hsmid: -1});
         this.remove();
     }
     render(){}
