@@ -9,7 +9,6 @@ const interleave = (a, b) => a.reduce((arr, v, i) => arr.concat(v, b[i]), []).fi
 export default class Component extends HTMLElement {
     hsm = {
         fns: [],
-        //properties: {}
     };
     constructor(){
         super();
@@ -19,7 +18,6 @@ export default class Component extends HTMLElement {
             // Normal instantiation
             this.hsm.id = window.hsm.components.length;
             window.hsm.components.push(this);
-            
             this.id = "root";
 
             //this.hsm.properties = Object.fromEntries(Array.from(this.attributes).map(x => [x.nodeName, x.nodeValue]));
@@ -33,7 +31,8 @@ export default class Component extends HTMLElement {
         } else {
             // Move element into shadow root
             // This if/else statement is for clarity of code
-            let div = this.parentNode.appendChild(document.createElement("div"));
+            let div = document.createElement("div");
+            this.parentNode.replaceChild(div, this); // Not append
             div.attachShadow({mode: "open"});
             div.shadowRoot.appendChild(this);
         }
