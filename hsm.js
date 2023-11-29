@@ -20,7 +20,6 @@ export default class Component extends HTMLElement {
             window.hsm.components.push(this);
             this.id = "root";
 
-            //this.hsm.properties = Object.fromEntries(Array.from(this.attributes).map(x => [x.nodeName, x.nodeValue]));
             this.append(...this.render());
 
             let sheet = new CSSStyleSheet();
